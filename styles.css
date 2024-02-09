@@ -88,6 +88,12 @@ div.styledTitle {
 div.intro_section {
     display: flex;
 }
+div.intro_part {
+    margin: auto;
+    width: 50%;
+    padding: 10px;
+    text-align: center;
+}
 div.personal_statement {
     margin: auto;
     width: 50%;
@@ -113,6 +119,11 @@ button.resume_button {
     border: 5px solid rgb(60, 179, 113);
     width: 60%;
     height: 30%;
+
+}
+button.resume_button a {
+    text-decoration: none;
+    color: white;
 }
 div.brief_desc {
     margin: auto;
