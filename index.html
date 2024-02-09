@@ -3,6 +3,8 @@
 <html lang=en>
   <!--beginning of the body portion-->
   <head>
+      
+      <link rel="stylesheet" type='text/css' href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" />
       <link rel="stylesheet" type="text/css" href="styles.css">
       <html lang="en">
       <meta charset="UTF-8">
@@ -18,24 +20,24 @@
         <li class="navitem"><a href="contact.html">Contact</a></li>
       </ul>
     </div>
-
-    <div class="styledTitle">
-      <header>
-          <span class="box">
-            <h1 style="color:rgb(60, 179, 113)">
-              jacksonyanek.dev
-            </h2>
-          </span>
-      </header> 
-    </div>
-
     <div class="content">
+      <div class="styledTitle">
+            <span class="box">
+              <h1 style="color:rgb(60, 179, 113)">
+              Jackson Yanek
+              </h2>
+            </span>
+      </div>
+      <div class="circlePhoto">
+        <img class= "me" src="images/me.png">
+      </div>
       <body>
-        <!-- sets the font and the main heading of the page-->
-          <h3> CS @ KU</h3>
-
-        <h2 style="color:MediumSeaGreen">a brief:</h2>
-            <p> 
+        <div class="personal_statement">
+          <h3> A motivated Computer Science major interested in Embedded Systems, Autonomous Vehicles, and Software Engineering</h3>
+        </div>
+        <div class="brief">
+          <h2 style="color:MediumSeaGreen">a brief:</h2>
+        </div>            <p> 
               Welcome to my website! I am Jackson, and I am a sophomore at KU, 
               studying Computer Science. The purpose of this website is twofold:
               develop web design skills and showcase the work I'm doing in college.
@@ -44,20 +46,51 @@
 
               <br>-Jackson
 
-            </p>    
-        <h2 style="color:MediumSeaGreen">my skills:</h2>
-          <h3>
-            <ul>
-              <li>Python</li>
-              <li>Rust</li>
-              <li>C++</li>
-              <li>Information Technology</li>
-              <li>HTML</li>
-              <li>CSS</li>
-              <li>C</li>
-            </ul>
-          </h3>
-        <h2 style="color:MediumSeaGreen">my interests:</h2>
+            </p>   
+        <div class="skills_title">
+          <h2 style="color:MediumSeaGreen">my skills:</h2>
+        </div>          
+        <div class="skills">
+          <div class="skill">
+            <h3>
+              <i class="devicon-python-plain"></i>
+            Python
+            </h3>
+            <p>I've created numerous projects, one being my Report Generating Program.</p>
+          </div>
+          <div class="skill">
+            <h3>
+              <i class="devicon-rust-original"></i>
+            Rust
+            </h3>
+            <p> Udemy Certification; Currently working on an email verification project using Rust.</p>
+          </div>
+          <div class="skill">
+            <h3>
+              <i class="devicon-cplusplus-plain"></i>
+            C++</h3>
+            <p>Used C++ to implement a command line calculator that parses user input.</p>
+          </div>
+          <div class="skill">
+            <h3>I.T</h3>
+            <p>Gained professional insight through my time with the City of Lawrence.</p>
+          </div>
+          <div class="skill">
+            <h3>
+              <i class="devicon-html5-plain"></i>
+              <i class="devicon-css3-plain"></i>
+            HTML & CSS</h3>
+            <p>Created this website as a self learning experience. </p>
+          </div>
+          <div class="skill">
+            <h3>
+              <i class="devicon-c-plain"></i>
+            C</h3>
+            <p> Used C to learn low level programming concepts and embedded systems.</p>
+          </div>
+        </div>
+        <div class="interests">
+          <h2 style="color:MediumSeaGreen; text-align: center;">my interests:</h2>
           <h3>
             <ul>
               <li>Autonomous Vehicles</li>
@@ -65,8 +98,7 @@
               <li>Software Engineering</li>
             </ul>
           </h3>
-        
-        
+        </div>
         <footer>
           <p style="color: rgb(86, 81, 99)">
             Project created by Jackson Yanek on 10/7/2023. The purpose of this website is to learn and develop vital web design skills, in addition to implementing a website. Note: The site may change periodically as I learn new skills and methods.

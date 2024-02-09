@@ -75,6 +75,46 @@ li.navitem a:hover {
 
 
 
-.projectBox {
-    background-color: #333;
+div.styledTitle {
+    
+    margin: auto;
+    width: 50%;
+    padding: 10px;
+}
+div.personal_statement {
+    margin: auto;
+    width: 50%;
+    padding: 10px;
+    text-align: center;
+}
+img.me {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 40%; 
+}
+
+div.skills {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+}
+div.skill {
+    display: inline-block;
+    margin: auto;
+    width: 200px;
+    padding: 10px;
+}
+div.skill h3{
+    text-align: center;
+}
+div.skill p {
+    text-align: center;
+}
+div.skills_title {
+    text-align: center;
+}
+div.brief {
+    text-align: center;
 }
