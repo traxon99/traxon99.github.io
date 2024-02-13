@@ -2,6 +2,10 @@ h1, h2 {
     color:rgb(60, 179, 113)
 }
 
+b  {
+   color: rgb(60, 179, 113); 
+}
+
 a {
     color: rgb(146, 146, 255);
 
@@ -167,5 +171,33 @@ div.interest {
     margin: auto;
     width: 250px;
     padding: 10px;
+    text-align: center;
+}
+
+/*
+START OF project.html SPECIFIC CSS ITEMS
+*/
+
+.email-auth-title {
+    text-align: center;
+}
+.email-auth-goals {
+    text-align: center;
+}
+
+.goalUl {
+    display: inline-block;
+    text-align: left;
+}
+
+.code-preview {
+    text-align: center;
+}
+.code {
+    width: 600px;
+    height: 600px;
+}
+
+.moreInfo {
     text-align: center;
 }

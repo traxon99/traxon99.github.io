@@ -15,62 +15,56 @@
                 <li class="navitem"><a href="contact.html">Contact</a></li>
             </ul>
         </div>
-
-<!--
         <div class="content">
-            <body>
-                <h1>projects</h1>
-                <div class="projectBox">
-                    <h2>
-                        data comparison using python<br>
-                    </h2>
-                    <p>
-                        &nbspWhile working for the City of Lawrence, I found an interesting project that I could impliment using Lansweeper and python.
-                    </p>
-                    <h2>
-                        &nbsp&nbsp the problem<br>
-                    </h2>
-                    <p>
-                        &nbsp&nbsp The city had no accurate way of determining whether users with Microsoft 365 access were using the correct version of Microsoft office.
-                    </p>
-                    <h2>
-                        &nbsp&nbsp breaking the problem down<br>
-                    </h2>
-                    <div class="subContent">
-                        <p>
-                            I found that you can export data out of Lansweeper, and through that, 
-                            I retrieved ".csv" files of all the employees of the city that used Outlook 2016.
-                            In addition to that data, I retrieved all of the users that had a "G3" license, which
-                            allows the user to use the latest Microsoft digital products.
-                            I then used python to create a 'User' class containing all relevent information (Username, Display Names, email, etc...)
-                        </p>
-                            I also added a limits to the results, for more accurate reporting.
-                            <br><br>
-                            For example, a theoretical user could have used a computer that was decommisioned, even though they have
-                            the upgraded license.
-                            <br><br>
-                            To account for this, I looked at the time of the last login of each computer with the outdated Office product,
-                            disqualifying it if it has not been scanned by Lansweeper in the last month. (If it hasn't been scanned, then it must be offline)
-                        </p>
+            <div class="styledTitle">
+                <!--place this back in intro_part when I get my headshot-->
+                <span class="box">
+                  <h1 style="color:rgb(60, 179, 113)">
+                  projects
+                  </h1>
+                </span>
+              </div>
+            <!--MAKE COLLAPSIBLE-->
+            <div class="email-auth">
+                <div class ="email-auth-title">
+                    <h2>Email Dual Factor Authentication</h2>
+                </div>
+                <div class="what-sparked">
+                    <p>In a world of cyber threats, a new form of security called dual-factor authentication emerged. According to a survey conducted by Google, almost 45% of Google users have some sort of dual authentication enabled on their accounts. This is why I chose this to be a project of mine. </p>
+                </div>
+                <div class="email-auth-goals">
+                    <h2>Goals</h2>
+                    <ul class="goalUl">
+                        <li>Incorporate <b>Actix</b>, one of Rust's premier web frameworks.</li>
+                        <li>Get used to larger projects in <b>Rust</b>.</li>
+                        <li>Learn how a service like <b>email authentication</b> works.</li>
+                    </ul>
+                </div>
+<!--
+                <ul>
+                    <li>This is a simple dual factor authentication email project I am currently working on.</li>
+                    <li>Currently, it can send an email through a crate called 'lettre' that connects to the Gmail SMTP servers.</li>
+                </ul>
+    
+-->
+                <div class="code-preview">
+                    <h2>Code Preview</h2>
+                    <p>Please note that this code is from a very early stage of this project, the most recent is on <a target="_blank" href="https://github.com/traxon99">my github.</a></p>
+                    <iframe class="code" frameborder="0" scrolling="no" allow="clipboard-write" src="https://emgithub.com/iframe.html?target=https%3A%2F%2Fgithub.com%2Ftraxon99%2Femail_authenticator%2Fblob%2Fmaster%2Fsrc%2Fmain.rs&style=default&type=code&showBorder=on&showLineNumbers=on&showFileMeta=on&showFullPath=on&showCopy=on"></iframe>    
+                </div>
+            </div>  
+                            <div class="moreInfo">
+                                <h2>
+                                    more info
+                                </h2>
+                                
+                                <p>
+                                    For more info on my projects, see <a target="_blank" href="https://github.com/traxon99">my github.</a>
+                                </p>
+                            </div>
+                        </body>
                     </div>
                 </div>
--->
-<h2>Email Dual Factor Authentication</h2>
-<ul>
-    <li>This is a simple dual factor authentication email project I am currently working on.</li>
-    <li>Currently, it can send an email through a crate called 'lettre' that connects to the Gmail SMTP servers.</li>
-</ul>
-<iframe frameborder="0" scrolling="no" style="width:80%; height:661px;" allow="clipboard-write" src="https://emgithub.com/iframe.html?target=https%3A%2F%2Fgithub.com%2Ftraxon99%2Femail_authenticator%2Fblob%2Fmaster%2Fsrc%2Fmain.rs&style=default&type=code&showBorder=on&showLineNumbers=on&showFileMeta=on&showFullPath=on&showCopy=on"></iframe>
-                
-                <div class="moreInfo">
-                    <h2>
-                        more info
-                    </h2>
-                    
-                    <p>
-                        For more info on my projects, see <a target="_blank" href="https://github.com/traxon99">my github.</a>
-                    </p>
-                </div>
-            </body>
+
         </div>
-    </div>
+
