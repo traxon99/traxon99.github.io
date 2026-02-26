@@ -1,23 +1,28 @@
-h1, h2 {
-    color:rgb(60, 179, 113)
+:root {
+  --color-accent: rgb(60, 179, 113);
+  --color-bg: rgb(11, 3, 34);
+  --color-link: rgb(146, 146, 255);
+  --color-footer-text: rgb(86, 81, 99);
 }
 
-b  {
-   color: rgb(60, 179, 113); 
+h1, h2 {
+    color: var(--color-accent);
+}
+
+b {
+   color: var(--color-accent);
 }
 
 a {
-    color: rgb(146, 146, 255);
-
+    color: var(--color-link);
 }
-body {
-    background-color: rgb(11, 3, 34);
 
+body {
+    background-color: var(--color-bg);
 }
 
 footer {
-    color: rgba(11, 3, 34, 0.391)
-
+    color: var(--color-footer-text);
 }
 
 a:hover {
@@ -27,7 +32,6 @@ a:hover {
 * {
     color: white;
     font-family: Menlo,Monaco,Consolas;
-
 }
 
 .box {
@@ -39,134 +43,104 @@ a:hover {
     content: "";
     width: 15px;
     height: 30px;
-    background: MediumSeaGreen;
+    background: var(--color-accent);
     display: inline-block;
     transform: translate(4px,4px);
-}
-
-.box h1:after {
     animation: cursor-blink 1s steps(2) infinite;
-
 }
 
 @keyframes cursor-blink {
     0% {
         opacity: 0;
     }
-
 }
 
-
-ul.navbar {
-    list-style-type: none;
-    margin: auto;
-    overflow: hidden;
-    text-align: center;
-}
-
-li.navitem {
-    display: inline-block;
-    text-align: center;
-}
-
-
-li.navitem a {
-    display: block;
-    color: white;
-    text-align: center;
-    padding: 14px 16px;
-    text-decoration: none;
-}
-
-li.navitem a:hover {
-    background-color: #555;
-}
-
-
-
-div.styledTitle {
-    
+.styledTitle {
     margin: auto;
     width: fit-content;
     padding: 10px;
 }
-div.intro_section {
+
+.intro_section {
     display: flex;
 }
-div.intro_part {
+
+.intro_part {
     margin: auto;
     width: 50%;
     padding: 10px;
     text-align: center;
 }
-div.personal_statement {
+
+.personal_statement {
     margin: auto;
     width: fit-content;
     padding: 10px;
     text-align: center;
 }
 
-img.me {
-    scale: 20%;
-}
-
-div.button_holder {
+.button_holder {
     margin: auto;
     width: fit-content;
     padding: 10px;
     text-align: center;
 }
+
 button.resume_button {
     font-size: medium;
-    background-color: rgb(11, 3, 34);
+    background-color: var(--color-bg);
     padding: 14px 40px;
     border-radius: 4px;
-    border: 5px solid rgb(60, 179, 113);
+    border: 5px solid var(--color-accent);
     width: fit-content;
     height: fit-content;
+}
 
-}
-button.resume_button a {
-    text-decoration: none;
-    color: white;
-}
-div.brief_desc {
+.brief_desc {
     margin: auto;
     width: 80%;
     padding: 10px;
     text-align: center;
 }
-div.skills {
+
+.skills {
     display: block;
     margin-left: auto;
     margin-right: auto;
     text-align: center;
 }
-div.skill {
+
+.skill {
     display: inline-block;
     margin: auto;
     width: 200px;
     padding: 10px;
 }
-div.skill h3{
+
+.skill h3 {
     text-align: center;
 }
-div.skill p {
+
+.skill p {
     text-align: center;
 }
-div.skills_title {
+
+.skills_title {
     text-align: center;
 }
-div.brief {
+
+.brief {
     text-align: center;
 }
-div.interests {
+
+.interests {
     display: block;
     margin-left: auto;
     margin-right: auto;
     text-align: center;
 }
-div.interest {
+
+.interest {
     display: flex;
     margin: auto;
     width: 250px;
@@ -174,30 +148,8 @@ div.interest {
     text-align: center;
 }
 
-/*
-START OF project.html SPECIFIC CSS ITEMS
-*/
-
-.email-auth-title {
+.contact-links {
+    margin: auto;
     text-align: center;
-}
-.email-auth-goals {
-    text-align: center;
-}
-
-.goalUl {
-    display: inline-block;
-    text-align: left;
-}
-
-.code-preview {
-    text-align: center;
-}
-.code {
-    width: 600px;
-    height: 600px;
-}
-
-.moreInfo {
-    text-align: center;
+    width: fit-content;
 }
