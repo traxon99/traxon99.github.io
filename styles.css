@@ -91,6 +91,28 @@ nav a:hover {
 
 /* ── Intro ───────────────────────────────────────────── */
 
+.intro_part {
+  display: flex;
+  align-items: flex-start;
+  gap: 28px;
+  margin-top: 14px;
+}
+
+.intro_text {
+  flex: 1;
+  min-width: 0;
+}
+
+.headshot {
+  width: 130px;
+  height: 130px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center top;
+  border: 3px solid var(--color-accent);
+  flex-shrink: 0;
+}
+
 .personal_statement {
   padding: 10px 0;
 }
