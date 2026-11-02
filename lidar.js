@@ -1,10 +1,10 @@
 // Margin decoration: a simulated race car with a 2D lidar.
 //
-// An invisible one-way track is fixed to the screen (it does not scroll). It
-// enters from off the left edge and snakes down the left margin. It then cuts
-// across through the gap between the resume button and "a brief:" (where
-// that gap sits when the page is scrolled to the top), snakes down the right
-// margin, and leaves off the right edge. An invisible car drives it. All that is drawn are its lidar
+// An invisible one-way track is laid out on the page (it scrolls with the
+// content, so the crossing always lines up with its gap). It enters from off
+// the left edge and snakes down the left margin. It then cuts across through
+// the gap between the resume button and "a brief:", snakes down the right
+// margin, and leaves off the right edge. A new car starts about every 20s. An invisible car drives it. All that is drawn are its lidar
 // returns, plus its path along the raceline in red: each scan casts a fan of
 // rays against the track walls, and the hits linger and fade, revealing the
 // track only where the car has just been.
@@ -35,7 +35,8 @@
   var path = null;           // { pts, dist, speed, len }
   var segs = null;           // wall segments, flattened [ax, ay, bx, by, ...]
   var grid = null, CELL = 64, gw = 0, gh = 0, stamp = null, stampId = 0;
-  var car = { d: 0, wait: 0 };
+  var RUN_EVERY = 20;        // seconds from one car's start to the next
+  var car = { d: 0, wait: 0, start: 0 };
   var clock = 0, nextScan = 0;
 
   var CAP = 16000;
@@ -283,6 +284,7 @@
     if (car.wait > 0) {          // between runs: car is off-screen, lidar idle
       car.wait -= dt;
       nextScan = clock;
+      if (car.wait <= 0) car.start = clock;
       return;
     }
     car.d += sample(car.d).v * dt;
@@ -295,7 +297,7 @@
     }
     if (car.d >= path.len) {     // left the page on the right; send the next car
       car.d = 0;
-      car.wait = 1.5 + Math.random() * 2;
+      car.wait = Math.max(1, RUN_EVERY - (clock - car.start));
       trail(NaN, NaN, clock);    // break the line between cars
     }
   }
@@ -362,6 +364,8 @@
     var dpr = Math.min(window.devicePixelRatio || 1, 2);
     canvas.width = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
+    canvas.style.width = W + "px";
+    canvas.style.height = H + "px";
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     head = 0; count = 0; thead = 0; tcount = 0;
     clock = 0; nextScan = 0;

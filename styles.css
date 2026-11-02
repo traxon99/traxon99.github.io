@@ -208,10 +208,9 @@ footer a:hover {
 /* ── Lidar race car decoration ───────────────────────── */
 
 .edge-lidar {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
+  position: absolute; /* sized by lidar.js; scrolls with the page */
+  top: 0;
+  left: 0;
   pointer-events: none;
   z-index: -1; /* behind page content, above the background */
 }
