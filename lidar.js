@@ -5,8 +5,9 @@
 // across through the gap between the resume button and "a brief:" (where
 // that gap sits when the page is scrolled to the top), snakes down the right
 // margin, and leaves off the right edge. An invisible car drives it. All that is drawn are its lidar
-// returns: each scan casts a fan of rays against the track walls, and the
-// hits linger and fade, revealing the track only where the car has just been.
+// returns, plus its path along the raceline in red: each scan casts a fan of
+// rays against the track walls, and the hits linger and fade, revealing the
+// track only where the car has just been.
 (function () {
   "use strict";
 
@@ -40,6 +41,17 @@
   var CAP = 16000;
   var px = new Float32Array(CAP), py = new Float32Array(CAP), pt = new Float32Array(CAP);
   var head = 0, count = 0;
+
+  // the car's recent path, drawn as a fading red line
+  var TCAP = 600, TFADE = 4.5;
+  var tx = new Float32Array(TCAP), ty = new Float32Array(TCAP), tt = new Float32Array(TCAP);
+  var thead = 0, tcount = 0;
+  var RED = "232, 72, 72";
+  function trail(x, y, t) {
+    tx[thead] = x; ty[thead] = y; tt[thead] = t;
+    thead = (thead + 1) % TCAP;
+    if (tcount < TCAP) tcount++;
+  }
 
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
   function gauss() { return (Math.random() + Math.random() + Math.random() - 1.5) * 1.15; }
@@ -130,11 +142,12 @@
     var pts = smooth(spline(cp, 5), 4, 6);
 
     // walls offset either side of the centerline
-    var left = [], right = [];
+    var left = [], right = [], normals = [];
     for (var i = 0; i < pts.length; i++) {
       var p = pts[Math.max(0, i - 1)], q = pts[Math.min(pts.length - 1, i + 1)];
       var tx = q[0] - p[0], ty = q[1] - p[1], tl = Math.hypot(tx, ty) || 1;
       var nx = -ty / tl, ny = tx / tl;
+      normals.push([nx, ny]);
       left.push([pts[i][0] + nx * hw, pts[i][1] + ny * hw]);
       right.push([pts[i][0] - nx * hw, pts[i][1] - ny * hw]);
     }
@@ -160,6 +173,20 @@
       }
     }
     stamp = new Uint32Array(segs.length / 4);
+
+    // Raceline: a heavily smoothed centerline (so it cuts corners and uses
+    // the width of the track), kept at least a car's width off each wall.
+    function keepInside(line) {
+      var lim = hw * 0.6;
+      return line.map(function (r, idx) {
+        var c = pts[idx], n = normals[idx];
+        var off = clamp((r[0] - c[0]) * n[0] + (r[1] - c[1]) * n[1], -lim, lim);
+        return [c[0] + n[0] * off, c[1] + n[1] * off];
+      });
+    }
+    var race = keepInside(smooth(pts, 8, 14));
+    race = keepInside(smooth(race, 2, 4));
+    pts = race;
 
     // distances and curvature-based target speeds
     var dist = [0], speed = [];
@@ -241,6 +268,8 @@
       return;
     }
     car.d += sample(car.d).v * dt;
+    var cur = sample(car.d);
+    trail(cur.x, cur.y, clock);
     while (clock >= nextScan) {
       var p = sample(car.d);
       scan(p.x, p.y, p.h, nextScan);
@@ -249,16 +278,49 @@
     if (car.d >= path.len) {     // left the page on the right; send the next car
       car.d = 0;
       car.wait = 1.5 + Math.random() * 2;
+      trail(NaN, NaN, clock);    // break the line between cars
     }
   }
 
   var BINS = 6, SIZE = 1.7;
   function draw(still) {
     ctx.clearRect(0, 0, W, H);
+    ctx.lineCap = "round";
     if (still) {
+      ctx.strokeStyle = "rgba(" + RED + ",0.45)";
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      path.pts.forEach(function (q, i) { if (i) ctx.lineTo(q[0], q[1]); else ctx.moveTo(q[0], q[1]); });
+      ctx.stroke();
       ctx.fillStyle = "rgba(" + GREEN + ",0.35)";
       for (var i = 0; i < count; i++) ctx.fillRect(px[i] - SIZE / 2, py[i] - SIZE / 2, SIZE, SIZE);
       return;
+    }
+    // driven path, oldest first, fading out with age
+    ctx.lineWidth = 2;
+    for (var j = 1; j < tcount; j++) {
+      var i1 = (thead - tcount + j + TCAP) % TCAP, i0 = (i1 - 1 + TCAP) % TCAP;
+      if (tx[i0] !== tx[i0] || tx[i1] !== tx[i1]) continue; // NaN = break
+      var a = 1 - (clock - tt[i1]) / TFADE;
+      if (a <= 0) continue;
+      ctx.strokeStyle = "rgba(" + RED + "," + (0.75 * a * a).toFixed(3) + ")";
+      ctx.beginPath();
+      ctx.moveTo(tx[i0], ty[i0]);
+      ctx.lineTo(tx[i1], ty[i1]);
+      ctx.stroke();
+    }
+    // the planned path just ahead of the car
+    if (car.wait <= 0) {
+      ctx.setLineDash([3, 5]);
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = "rgba(" + RED + ",0.35)";
+      ctx.beginPath();
+      for (var ahead = 0; ahead <= 140; ahead += 7) {
+        var q = sample(car.d + ahead);
+        if (ahead) ctx.lineTo(q.x, q.y); else ctx.moveTo(q.x, q.y);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
     }
     for (var b = 0; b < BINS; b++) {
       var lo = (b / BINS) * FADE, hi = ((b + 1) / BINS) * FADE;
@@ -283,7 +345,7 @@
     canvas.width = Math.round(W * dpr);
     canvas.height = Math.round(H * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    head = 0; count = 0;
+    head = 0; count = 0; thead = 0; tcount = 0;
     clock = 0; nextScan = 0;
     car.d = 0; car.wait = 0.4;
   }
