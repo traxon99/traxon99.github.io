@@ -204,3 +204,17 @@ footer a {
 footer a:hover {
   opacity: 0.5;
 }
+
+/* ── Dithered edge overlay ───────────────────────────── */
+
+.dither-edge {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: -1; /* behind page content, above the background */
+  opacity: 0.8;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
