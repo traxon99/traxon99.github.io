@@ -1,7 +1,8 @@
 // Subtle animated neural network drawn in the page margins.
 // A small feed-forward graph sits in each side gutter (outside the reading
-// column). Signals travel from layer to layer and briefly light up the
-// connections they pass through. Everything fades out toward the text.
+// column). It runs repeated forward passes: the input layer fires, then each
+// layer in turn sends signals along its weighted links and the next layer
+// activates. Everything fades out toward the text.
 (function () {
   "use strict";
 
@@ -22,7 +23,6 @@
   var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   var W = 0, H = 0;
   var nets = [];     // one network per usable gutter
-  var pulses = [];
 
   function rand(a, b) { return a + Math.random() * (b - a); }
 
@@ -43,7 +43,7 @@
           bx: x + rand(-10, 10), by: y, bz: rand(-1, 1) * hw * 1.1,
           x: 0, y: 0, k: 1, near: 0.5,
           ph: rand(0, Math.PI * 2), amp: rand(3, 8),
-          glow: 0, out: []
+          glow: 0, act: 0, out: [], inp: []
         });
       }
       cols.push(col);
@@ -58,8 +58,10 @@
           return Math.abs(a.by - n.by) - Math.abs(b.by - n.by) + rand(-H * 0.15, H * 0.15);
         }).slice(0, links);
         picked.forEach(function (m) {
-          var e = { a: n, b: m, glow: 0 };
+          // mostly excitatory weights, a few inhibitory ones
+          var e = { a: n, b: m, glow: 0, w: rand(-0.5, 1) };
           n.out.push(e);
+          m.inp.push(e);
           edges.push(e);
         });
       });
@@ -68,7 +70,9 @@
     cols.forEach(function (c) { all = all.concat(c); });
     return {
       cols: cols, edges: edges, nodes: all, x0: x0, x1: x1, cx: (x0 + x1) / 2,
-      ph: rand(0, Math.PI * 2), fadeRight: fadeTowardRight
+      ph: rand(0, Math.PI * 2), fadeRight: fadeTowardRight,
+      // forward-pass state: layer currently sending, progress along its links
+      layer: -1, t: 0, wait: rand(0.2, 1.5)
     };
   }
 
@@ -86,7 +90,6 @@
     var right = W - rect.right - CONTENT_PAD;
 
     nets = [];
-    pulses = [];
     if (left >= MIN_GUTTER) nets.push(buildNet(24, left - 10, true));
     if (right >= MIN_GUTTER) nets.push(buildNet(rect.right + CONTENT_PAD + 10, W - 24, false));
   }
@@ -99,13 +102,47 @@
     return 0.35 + 0.65 * Math.min(1, d * 1.6);
   }
 
-  function spawnPulse(net) {
-    var start = net.cols[0][Math.floor(Math.random() * net.cols[0].length)];
-    var e = start.out[Math.floor(Math.random() * start.out.length)];
-    if (e) pulses.push({ net: net, e: e, t: 0, speed: rand(0.6, 1.1) });
-  }
+  var LAYER_TIME = 0.55; // seconds for a signal to cross one layer of links
 
-  var lastSpawn = 0;
+  // One forward pass: the input layer gets a random activation pattern, then
+  // each layer sends its activations along weighted links to the next, which
+  // computes ReLU(sum(w * a)), layer by layer, to the output.
+  function advancePass(net, dt) {
+    if (net.layer < 0) {
+      net.wait -= dt;
+      if (net.wait > 0) return;
+      net.cols[0].forEach(function (n) {
+        n.act = Math.random() < 0.6 ? rand(0.5, 1) : 0;
+        n.glow = Math.max(n.glow, n.act);
+      });
+      net.layer = 0;
+      net.t = 0;
+      return;
+    }
+    net.t += dt / LAYER_TIME;
+    var sending = net.cols[net.layer];
+    sending.forEach(function (n) {
+      n.out.forEach(function (e) {
+        if (n.act > 0 && e.w > 0) {
+          e.glow = Math.max(e.glow, n.act * e.w * (1 - Math.abs(net.t - 0.5)));
+        }
+      });
+    });
+    if (net.t < 1) return;
+    var next = net.cols[net.layer + 1];
+    next.forEach(function (m) {
+      var sum = 0;
+      m.inp.forEach(function (e) { sum += e.a.act * e.w; });
+      m.act = sum > 0.2 ? Math.min(1, sum) : 0;
+      m.glow = Math.max(m.glow, m.act);
+    });
+    net.layer++;
+    net.t = 0;
+    if (net.layer >= net.cols.length - 1) {
+      net.layer = -1;          // output reached; rest, then run another pass
+      net.wait = rand(1.2, 2.8);
+    }
+  }
 
   function step(dt, time) {
     var s = time * 0.001;
@@ -127,37 +164,14 @@
         n.y = H / 2 + y1 * k;
         n.k = k;
         n.near = Math.max(0, Math.min(1, (k - 0.8) / 0.45)); // 0 far .. 1 near
-        n.glow *= Math.pow(0.12, dt);
+        n.glow *= Math.pow(0.3, dt);
       });
       // draw far nodes first
       net.nodes.sort(function (p, q) { return p.k - q.k; });
       net.edges.forEach(function (e) { e.glow *= Math.pow(0.2, dt); });
     });
 
-    if (nets.length && time - lastSpawn > 700) {
-      lastSpawn = time;
-      spawnPulse(nets[Math.floor(Math.random() * nets.length)]);
-    }
-
-    for (var i = pulses.length - 1; i >= 0; i--) {
-      var p = pulses[i];
-      p.t += dt * p.speed;
-      p.e.glow = Math.max(p.e.glow, 1 - Math.abs(p.t - 0.5));
-      if (p.t >= 1) {
-        p.e.b.glow = 1;
-        var outs = p.e.b.out;
-        // keep firing into the next layer, sometimes branching
-        if (outs.length) {
-          p.e = outs[Math.floor(Math.random() * outs.length)];
-          p.t = 0;
-          if (Math.random() < 0.25 && outs.length > 1 && pulses.length < 40) {
-            pulses.push({ net: p.net, e: outs[Math.floor(Math.random() * outs.length)], t: 0, speed: p.speed });
-          }
-        } else {
-          pulses.splice(i, 1);
-        }
-      }
-    }
+    nets.forEach(function (net) { advancePass(net, dt); });
   }
 
   function draw() {
@@ -190,16 +204,25 @@
       });
     });
     ctx.shadowColor = "rgba(" + GREEN + ", 0.6)";
-    pulses.forEach(function (p) {
-      var a = p.e.a, b = p.e.b;
-      var x = a.x + (b.x - a.x) * p.t, y = a.y + (b.y - a.y) * p.t;
-      var near = a.near + (b.near - a.near) * p.t;
-      var f = fade(p.net, x) * (0.45 + 0.55 * near);
-      ctx.shadowBlur = 10;
-      ctx.fillStyle = "rgba(" + GREEN + "," + (f * 0.75).toFixed(3) + ")";
-      ctx.beginPath();
-      ctx.arc(x, y, 1.1 + 1.3 * near, 0, Math.PI * 2);
-      ctx.fill();
+    // signals currently in flight between two layers
+    nets.forEach(function (net) {
+      if (net.layer < 0) return;
+      var t = net.t;
+      net.cols[net.layer].forEach(function (n) {
+        if (n.act <= 0) return;
+        n.out.forEach(function (e) {
+          if (e.w <= 0) return;
+          var a = e.a, b = e.b;
+          var x = a.x + (b.x - a.x) * t, y = a.y + (b.y - a.y) * t;
+          var near = a.near + (b.near - a.near) * t;
+          var f = fade(net, x) * (0.45 + 0.55 * near) * Math.min(1, 0.4 + n.act * e.w);
+          ctx.shadowBlur = 10;
+          ctx.fillStyle = "rgba(" + GREEN + "," + (f * 0.8).toFixed(3) + ")";
+          ctx.beginPath();
+          ctx.arc(x, y, 1.1 + 1.3 * near, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      });
     });
   }
 
