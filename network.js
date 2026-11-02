@@ -138,32 +138,39 @@
 
   function draw() {
     ctx.clearRect(0, 0, W, H);
+    ctx.shadowBlur = 0;
     ctx.lineWidth = 1;
     nets.forEach(function (net) {
+      ctx.shadowBlur = 0;
       net.edges.forEach(function (e) {
         var f = fade(net, (e.a.x + e.b.x) / 2);
-        ctx.strokeStyle = "rgba(" + GREEN + "," + (f * (0.07 + 0.28 * e.glow)).toFixed(3) + ")";
+        ctx.strokeStyle = "rgba(" + GREEN + "," + (f * (0.1 + 0.35 * e.glow)).toFixed(3) + ")";
         ctx.beginPath();
         ctx.moveTo(e.a.x, e.a.y);
         ctx.lineTo(e.b.x, e.b.y);
         ctx.stroke();
       });
+      // soft glow on nodes and signals (lines stay sharp, it's cheaper)
+      ctx.shadowColor = "rgba(" + GREEN + ", 0.6)";
       net.cols.forEach(function (col) {
         col.forEach(function (n) {
           var f = fade(net, n.x);
+          ctx.shadowBlur = 6 + 8 * n.glow;
           var r = 2.2 + n.glow * 1.6;
-          ctx.fillStyle = "rgba(" + GREEN + "," + (f * (0.22 + 0.5 * n.glow)).toFixed(3) + ")";
+          ctx.fillStyle = "rgba(" + GREEN + "," + (f * (0.32 + 0.55 * n.glow)).toFixed(3) + ")";
           ctx.beginPath();
           ctx.arc(n.x, n.y, r, 0, Math.PI * 2);
           ctx.fill();
         });
       });
     });
+    ctx.shadowColor = "rgba(" + GREEN + ", 0.6)";
     pulses.forEach(function (p) {
       var a = p.e.a, b = p.e.b;
       var x = a.x + (b.x - a.x) * p.t, y = a.y + (b.y - a.y) * p.t;
       var f = fade(p.net, x);
-      ctx.fillStyle = "rgba(" + GREEN + "," + (f * 0.55).toFixed(3) + ")";
+      ctx.shadowBlur = 10;
+      ctx.fillStyle = "rgba(" + GREEN + "," + (f * 0.7).toFixed(3) + ")";
       ctx.beginPath();
       ctx.arc(x, y, 1.8, 0, Math.PI * 2);
       ctx.fill();
