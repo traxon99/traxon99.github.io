@@ -174,30 +174,47 @@
     }
     stamp = new Uint32Array(segs.length / 4);
 
-    // Raceline: a heavily smoothed centerline (so it cuts corners and uses
-    // the width of the track), kept at least a car's width off each wall.
-    function keepInside(line) {
-      var lim = hw * 0.6;
-      return line.map(function (r, idx) {
-        var c = pts[idx], n = normals[idx];
-        var off = clamp((r[0] - c[0]) * n[0] + (r[1] - c[1]) * n[1], -lim, lim);
-        return [c[0] + n[0] * off, c[1] + n[1] * off];
-      });
+    // Raceline: an approximate minimum-curvature line. Each point lives on
+    // its track cross-section (centerline + normal * offset). We repeatedly
+    // pull every point toward the midpoint of its neighbours, which
+    // straightens the line, then clamp it to stay a car's width off the walls.
+    // The result swings wide on entry, clips the apex and runs out wide on exit.
+    var lim = hw * 0.62, N = pts.length, off = new Float32Array(N), race = pts.slice();
+    for (var it = 0; it < 600; it++) {
+      for (var r = 2; r < N - 2; r++) {
+        var mx = (race[r - 2][0] + race[r + 2][0]) / 2, my = (race[r - 2][1] + race[r + 2][1]) / 2;
+        var c = pts[r], nrm = normals[r];
+        var target = (mx - c[0]) * nrm[0] + (my - c[1]) * nrm[1];
+        off[r] = clamp(off[r] + (target - off[r]) * 0.5, -lim, lim);
+        race[r] = [c[0] + nrm[0] * off[r], c[1] + nrm[1] * off[r]];
+      }
     }
-    var race = keepInside(smooth(pts, 8, 14));
-    race = keepInside(smooth(race, 2, 4));
     pts = race;
 
-    // distances and curvature-based target speeds
+    // Speed profile: corner speed from a lateral-grip limit (v = sqrt(a / k)),
+    // then a forward pass for acceleration and a backward pass for braking,
+    // so the car brakes before corners and accelerates out of them.
+    var VMAX = 330, A_LAT = 620, A_ACC = 300, A_BRK = 650;   // px/s and px/s^2
     var dist = [0], speed = [];
-    for (var z = 1; z < pts.length; z++) dist.push(dist[z - 1] + Math.hypot(pts[z][0] - pts[z - 1][0], pts[z][1] - pts[z - 1][1]));
-    var vmax = 230;
-    for (var v = 0; v < pts.length; v++) {
-      var i0 = Math.max(0, v - 5), i1 = Math.min(pts.length - 1, v + 5);
-      var h0 = Math.atan2(pts[v][1] - pts[i0][1], pts[v][0] - pts[i0][0]);
-      var h1 = Math.atan2(pts[i1][1] - pts[v][1], pts[i1][0] - pts[v][0]);
-      var turn = i0 === v || i1 === v ? 0 : Math.abs(Math.atan2(Math.sin(h1 - h0), Math.cos(h1 - h0)));
-      speed.push(vmax / (1 + turn * 2.5));
+    for (var z = 1; z < N; z++) dist.push(dist[z - 1] + Math.hypot(pts[z][0] - pts[z - 1][0], pts[z][1] - pts[z - 1][1]));
+    var curv = new Float32Array(N), K = 4;
+    for (var v = K; v < N - K; v++) {
+      var A = pts[v - K], B = pts[v], C = pts[v + K];
+      var ab = Math.hypot(B[0] - A[0], B[1] - A[1]), bc = Math.hypot(C[0] - B[0], C[1] - B[1]), ca = Math.hypot(A[0] - C[0], A[1] - C[1]);
+      var area2 = Math.abs((B[0] - A[0]) * (C[1] - A[1]) - (B[1] - A[1]) * (C[0] - A[0]));
+      curv[v] = ab * bc * ca > 0 ? (2 * area2) / (ab * bc * ca) : 0;  // 1 / circumradius
+    }
+    for (var w = 0; w < N; w++) {
+      var kk = 0, cnt = 0;
+      for (var j2 = Math.max(0, w - 3); j2 <= Math.min(N - 1, w + 3); j2++) { kk += curv[j2]; cnt++; }
+      kk /= cnt;
+      speed.push(kk > 1e-6 ? Math.min(VMAX, Math.sqrt(A_LAT / kk)) : VMAX);
+    }
+    for (var f = 1; f < N; f++) {
+      speed[f] = Math.min(speed[f], Math.sqrt(speed[f - 1] * speed[f - 1] + 2 * A_ACC * (dist[f] - dist[f - 1])));
+    }
+    for (var g = N - 2; g >= 0; g--) {
+      speed[g] = Math.min(speed[g], Math.sqrt(speed[g + 1] * speed[g + 1] + 2 * A_BRK * (dist[g + 1] - dist[g])));
     }
     path = { pts: pts, dist: dist, speed: speed, len: dist[dist.length - 1] };
     return true;
@@ -217,7 +234,8 @@
     var c = P.pts[Math.min(P.pts.length - 1, lo + 3)];
     if (c === a) c = b;
     return { x: a[0] + (b[0] - a[0]) * t, y: a[1] + (b[1] - a[1]) * t,
-             h: Math.atan2(c[1] - a[1], c[0] - a[0]), v: P.speed[lo] };
+             h: Math.atan2(c[1] - a[1], c[0] - a[0]),
+             v: P.speed[lo] + (P.speed[Math.min(lo + 1, P.pts.length - 1)] - P.speed[lo]) * t };
   }
 
   function scan(ox, oy, heading, now) {
