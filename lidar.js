@@ -72,8 +72,8 @@
 
   function build() {
     var m = Math.min(W, H);
-    var hw = clamp(m * 0.04, 16, 34);             // half track width
-    var amp = hw * 0.8;                           // how far the track snakes
+    var hw = clamp(m * 0.03, 14, 26);             // half track width
+    var amp = hw * 0.6;                           // how far the track snakes
     var inset = hw + amp + 6;
     var r = clamp(m * 0.16, hw * 2 + amp, 170);
     RANGE = clamp(m * 0.32, 140, 280);
